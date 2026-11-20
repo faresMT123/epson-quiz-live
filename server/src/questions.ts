@@ -20,40 +20,34 @@ export interface Question {
 export const QUESTIONS: readonly Question[] = [
   {
     id: 'q1',
-    prompt: 'Que signifie le sigle « DPI » utilisé pour les imprimantes ?',
-    options: [
-      'Dots Per Inch (points par pouce)',
-      'Data Print Interface',
-      'Digital Page Index',
-    ],
-    correctIndex: 0,
+    prompt: 'Le volume de la gamme Home est réduit de :',
+    options: ['10%', '20%', '40%'],
+    correctIndex: 1,
   },
   {
     id: 'q2',
-    prompt: 'Combien de couleurs de base compose une impression CMJN ?',
-    options: ['Trois', 'Quatre', 'Six'],
+    prompt: "La durabilité d'impression de la nouvelle gamme Home :",
+    options: ['30 000 pages', '50 000 pages', '100 000 pages'],
     correctIndex: 1,
   },
   {
     id: 'q3',
-    prompt: "Quel format de fichier est le plus adapté à l'impression professionnelle ?",
-    options: ['Le PDF', 'Le GIF', 'Le BMP'],
-    correctIndex: 0,
-  },
-  {
-    id: 'q4',
-    prompt: "Quelle technologie projette de fines gouttelettes d'encre sur le papier ?",
-    options: ['Le laser', "Le jet d'encre", 'Le thermique direct'],
+    prompt:
+      'Quel modèle est équipé de la fonction de numérisation et de copie recto-verso automatique ?',
+    options: ['L5390', 'L6370', 'L4360'],
     correctIndex: 1,
   },
   {
+    id: 'q4',
+    prompt:
+      "Quel est le rendement en pages de la bouteille d'encre noire incluse avec les nouveaux modèles ?",
+    options: ['7 500 pages', '5 500 pages', '15 100 pages'],
+    correctIndex: 2,
+  },
+  {
     id: 'q5',
-    prompt: "Quel est l'intérêt principal d'une imprimante à réservoir d'encre rechargeable ?",
-    options: [
-      'Un coût à la page réduit',
-      "Une vitesse d'impression doublée",
-      'Une résolution supérieure au laser',
-    ],
-    correctIndex: 0,
+    prompt: "Quel est le cycle d'utilisation de la L6370 ?",
+    options: ['30 000 pages', '50 000 pages', '100 000 pages'],
+    correctIndex: 2,
   },
 ];

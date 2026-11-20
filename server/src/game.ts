@@ -85,7 +85,11 @@ export class Game {
   private quizStartedAt: number | null = null;
   private readonly players = new Map<string, Player>();
   /** Cadeaux du podium, conservés d'une room à l'autre (jamais réinitialisés). */
-  private prizes: string[] = ['', '', ''];
+  private prizes: string[] = [
+    'Imprimante L3310',
+    'Weekend pour 2 personnes valeur de 500DT',
+    'Carte cadeau FATALE valeur 300DT',
+  ];
   /** Quiz courant, modifiable par l'organisateur avant chaque room. */
   private questions: Question[] = DEFAULT_QUESTIONS.map((question) => ({
     ...question,

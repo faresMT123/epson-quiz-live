@@ -52,9 +52,9 @@ const STATE_BADGE: Record<RoomState, string> = {
 
 const PRIZE_LABELS = ['1re place', '2e place', '3e place'];
 const PRIZE_PLACEHOLDERS = [
-  'Imprimante L3351 ou L3110',
-  'Lot surprise Epson',
-  'Lot surprise Epson',
+  'Imprimante L3310',
+  'Weekend pour 2 personnes valeur de 500DT',
+  'Carte cadeau FATALE valeur 300DT',
 ];
 
 function formatClock(ms: number): string {
