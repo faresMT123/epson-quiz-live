@@ -73,7 +73,6 @@ export function LeaderboardReveal({
       <div className="reveal-modal">
         <header className="reveal-brand">
           <EpsonLogo height={30} />
-          <span className="reveal-tagline">CLASSEMENT PUBLIÉ</span>
         </header>
 
         {stage === 'calculating' && (
@@ -124,7 +123,7 @@ export function LeaderboardReveal({
 
         {stage === 'summary' && (
           <div className="reveal-summary">
-            <h2 className="summary-title">Résultats de la room</h2>
+            <h2 className="summary-title">RÉSULTATS</h2>
             <p className="summary-sub">
               {stats.participants} participant{stats.participants > 1 ? 's' : ''} · {stats.total}{' '}
               questions
@@ -135,24 +134,21 @@ export function LeaderboardReveal({
                 <span className="summary-badge is-good" aria-hidden="true" />
                 <ParticipantGlyph />
                 <span className="summary-count is-good">{stats.allCorrect}</span>
-                <span className="summary-label is-good">Toutes justes</span>
-                <span className="summary-hint">Ont tout trouvé</span>
+                <span className="summary-label is-good">Toutes les réponses justes</span>
               </div>
 
               <div className="summary-item">
                 <X size={26} className="summary-badge-x" aria-hidden="true" />
                 <ParticipantGlyph />
                 <span className="summary-count is-partial">{stats.someCorrect}</span>
-                <span className="summary-label is-partial">Au moins une juste</span>
-                <span className="summary-hint">Sans avoir tout trouvé</span>
+                <span className="summary-label is-partial">Au moins une réponse juste</span>
               </div>
 
               <div className="summary-item">
                 <X size={26} className="summary-badge-x" aria-hidden="true" />
                 <ParticipantGlyph />
                 <span className="summary-count is-none">{stats.noneCorrect}</span>
-                <span className="summary-label is-none">Aucune juste</span>
-                <span className="summary-hint">Aucune bonne réponse</span>
+                <span className="summary-label is-none">Aucune réponse juste</span>
               </div>
             </div>
 

@@ -55,7 +55,7 @@ export function JoinScreen({ onJoin, joining, notice, onAdmin }: JoinScreenProps
               onChange={(event) => setLastName(event.target.value)}
               maxLength={40}
               required
-              placeholder="Dupont"
+              placeholder="Nom"
             />
           </div>
           <div className="field">
@@ -68,7 +68,7 @@ export function JoinScreen({ onJoin, joining, notice, onAdmin }: JoinScreenProps
               onChange={(event) => setFirstName(event.target.value)}
               maxLength={40}
               required
-              placeholder="Jean"
+              placeholder="Prénom"
             />
           </div>
           <div className="field">
@@ -81,7 +81,7 @@ export function JoinScreen({ onJoin, joining, notice, onAdmin }: JoinScreenProps
               onChange={(event) => setCompany(event.target.value)}
               maxLength={60}
               required
-              placeholder="Epson"
+              placeholder="Société"
             />
           </div>
 
