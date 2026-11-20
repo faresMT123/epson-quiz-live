@@ -97,6 +97,9 @@ export function AdminDashboard({ admin, snapshot, onExit }: AdminDashboardProps)
     })),
   );
   const [questionsSaved, setQuestionsSaved] = useState(false);
+  // Le QR s'affiche uniquement sur la console qui l'a demandé : les autres
+  // consoles admin gardent leur interface normale.
+  const [qrVisible, setQrVisible] = useState(false);
   const { action, error, busy, connected, logout, savePrizes, saveQuestions } = admin;
   const { roomState, stats, accessClosed } = snapshot;
 
@@ -350,12 +353,20 @@ export function AdminDashboard({ admin, snapshot, onExit }: AdminDashboardProps)
             <button
               type="button"
               className="btn btn-secondary"
-              onClick={() => void action(snapshot.display === 'qr' ? 'hide-qr' : 'show-qr')}
+              onClick={() => {
+                if (qrVisible) {
+                  setQrVisible(false);
+                  if (snapshot.display === 'qr') void action('hide-qr');
+                } else {
+                  setQrVisible(true);
+                  if (snapshot.display !== 'qr') void action('show-qr');
+                }
+              }}
               disabled={busy}
-              title="Affiche le QR code d'inscription sur tous les écrans admin connectés."
+              title="Affiche le QR code d'inscription en plein écran sur cet appareil et sur l'écran de présentation."
             >
               <QrCode size={18} />
-              {snapshot.display === 'qr' ? 'MASQUER LE QR CODE' : 'AFFICHER LE QR CODE'}
+              {qrVisible ? 'MASQUER LE QR CODE' : 'AFFICHER LE QR CODE'}
             </button>
 
             <button
@@ -578,8 +589,13 @@ export function AdminDashboard({ admin, snapshot, onExit }: AdminDashboardProps)
         </footer>
       </main>
 
-      {snapshot.display === 'qr' && snapshot.reveal.stage === 'off' && (
-        <QrScreen onClose={() => void action('hide-qr')} />
+      {qrVisible && snapshot.reveal.stage === 'off' && (
+        <QrScreen
+          onClose={() => {
+            setQrVisible(false);
+            if (snapshot.display === 'qr') void action('hide-qr');
+          }}
+        />
       )}
 
       {snapshot.reveal.stage !== 'off' && (
