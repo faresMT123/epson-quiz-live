@@ -1,0 +1,22 @@
+# Déploiement Render (plan gratuit) — un seul service Node qui sert le client
+# compilé et Socket.IO. L'état du jeu est en mémoire : rien à provisionner.
+#
+# Mise en place : Render → New → Blueprint → choisir ce dépôt.
+# Puis renseigner ADMIN_PASSWORD dans les variables du service.
+services:
+  - type: web
+    name: epson-quiz-live
+    runtime: node
+    plan: free
+    region: frankfurt
+    branch: main
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: false
+    envVars:
+      - key: NODE_VERSION
+        value: 22.11.0
+      # Obligatoire : mot de passe de l'espace organisateur (/admin).
+      - key: ADMIN_PASSWORD
+        sync: false

@@ -1,0 +1,23 @@
+{
+  "name": "epson-quiz-live",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Quiz multijoueur temps réel (React + TypeScript + Socket.IO), état 100% en mémoire.",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n server,client -c blue,magenta \"npm run dev -w server\" \"npm run dev -w client\"",
+    "build": "npm run build -w client",
+    "start": "npm run start -w server",
+    "typecheck": "npm run typecheck -w server && npm run typecheck -w client",
+    "load-test": "node scripts/load-test.mjs",
+    "icons": "node scripts/generate-icons.mjs"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "sharp": "^0.33.5",
+    "socket.io-client": "^4.8.1"
+  }
+}
