@@ -2,6 +2,8 @@ import { randomUUID } from 'node:crypto';
 import {
   COUNTDOWN_MS,
   QUIZ_DURATION_MS,
+  REVEAL_CALC_MS,
+  REVEAL_COUNTDOWN_MS,
   type AdminSnapshot,
   type AdminPlayerRow,
   type AdminStats,
@@ -15,6 +17,7 @@ import {
   type PlayerSession,
   type PublicQuestion,
   type PublicRoom,
+  type RevealStage,
   type RoomState,
 } from '../../shared/src/index';
 import { QUESTIONS as DEFAULT_QUESTIONS, type Question } from './questions';
@@ -73,6 +76,10 @@ export class Game {
   private state: RoomState = 'WAITING';
   /** Écran présentateur (QR code) piloté depuis n'importe quelle console admin. */
   private display: DisplayMode = 'off';
+  /** Étapes du dévoilement du classement (partagées entre les consoles). */
+  private revealStage: RevealStage = 'off';
+  private revealCalculatingUntil: number | null = null;
+  private revealCountdownEndsAt: number | null = null;
   private accessClosed = false;
   private countdownEndsAt: number | null = null;
   private quizStartedAt: number | null = null;
@@ -262,6 +269,44 @@ export class Game {
     return ok(null);
   }
 
+  /** Lance le dévoilement du classement (calcul de 8 s puis synthèse). */
+  startReveal(): Outcome<null> {
+    if (this.state !== 'FINISHED') {
+      return fail('BAD_STATE', 'Le classement est disponible à la fin de la room.');
+    }
+    this.revealStage = 'calculating';
+    this.revealCalculatingUntil = Date.now() + REVEAL_CALC_MS;
+    this.revealCountdownEndsAt = null;
+    this.hooks.onAdmin();
+    return ok(null);
+  }
+
+  /** Décompte 5 → 0 puis podium, déclenché depuis une console de pilotage. */
+  startPodiumCountdown(): Outcome<null> {
+    if (this.revealStage !== 'summary' && this.revealStage !== 'calculating') {
+      return fail('BAD_STATE', 'La synthèse du classement n’est pas encore affichée.');
+    }
+    this.revealStage = 'countdown';
+    this.revealCalculatingUntil = null;
+    this.revealCountdownEndsAt = Date.now() + REVEAL_COUNTDOWN_MS;
+    this.hooks.onAdmin();
+    return ok(null);
+  }
+
+  /** Ferme le classement sur tous les écrans. */
+  hideReveal(): Outcome<null> {
+    if (this.revealStage === 'off') return ok(null);
+    this.resetReveal();
+    this.hooks.onAdmin();
+    return ok(null);
+  }
+
+  private resetReveal(): void {
+    this.revealStage = 'off';
+    this.revealCalculatingUntil = null;
+    this.revealCountdownEndsAt = null;
+  }
+
   newRoom(): Outcome<null> {
     if (this.state !== 'FINISHED') {
       return fail(
@@ -272,6 +317,7 @@ export class Game {
     this.roomId = randomUUID();
     this.state = 'WAITING';
     this.display = 'off';
+    this.resetReveal();
     this.accessClosed = false;
     this.countdownEndsAt = null;
     this.quizStartedAt = null;
@@ -366,6 +412,7 @@ export class Game {
   /** Appelé toutes les 100 ms par le serveur. */
   tick(): void {
     const now = Date.now();
+    this.tickReveal(now);
 
     if (this.state === 'COUNTDOWN' && this.countdownEndsAt !== null && now >= this.countdownEndsAt) {
       this.state = 'RUNNING';
@@ -391,6 +438,28 @@ export class Game {
       if (player.submittedAt === null && player.endsAt !== null && now >= player.endsAt) {
         this.finalize(player, true);
       }
+    }
+  }
+
+  private tickReveal(now: number): void {
+    if (
+      this.revealStage === 'calculating' &&
+      this.revealCalculatingUntil !== null &&
+      now >= this.revealCalculatingUntil
+    ) {
+      this.revealStage = 'summary';
+      this.revealCalculatingUntil = null;
+      this.hooks.onAdmin();
+      return;
+    }
+    if (
+      this.revealStage === 'countdown' &&
+      this.revealCountdownEndsAt !== null &&
+      now >= this.revealCountdownEndsAt
+    ) {
+      this.revealStage = 'revealed';
+      this.revealCountdownEndsAt = null;
+      this.hooks.onAdmin();
     }
   }
 
@@ -532,6 +601,11 @@ export class Game {
       roomId: this.roomId,
       roomState: this.state,
       display: this.display,
+      reveal: {
+        stage: this.revealStage,
+        calculatingUntil: this.revealCalculatingUntil,
+        countdownEndsAt: this.revealCountdownEndsAt,
+      },
       accessClosed: this.accessClosed,
       serverNow: Date.now(),
       countdownEndsAt: this.countdownEndsAt,

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { AdminApp } from './screens/AdminApp';
 import { PlayerApp } from './screens/PlayerApp';
+import { PresenterApp } from './screens/PresenterApp';
 
 function normalizePath(path: string): string {
   const trimmed = path.replace(/\/+$/, '');
@@ -24,6 +25,10 @@ export function App() {
 
   if (path === '/admin') {
     return <AdminApp onExit={() => navigate('/')} />;
+  }
+
+  if (path === '/ecran') {
+    return <PresenterApp onExit={() => navigate('/')} />;
   }
 
   return <PlayerApp onAdmin={() => navigate('/admin')} />;

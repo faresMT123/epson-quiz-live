@@ -6,6 +6,7 @@ import {
   ListChecks,
   Lock,
   LogOut,
+  Monitor,
   Plus,
   PlayCircle,
   QrCode,
@@ -26,7 +27,8 @@ import {
 import { EpsonLogo } from '../components/EpsonLogo';
 import type { AdminApi } from '../lib/useAdmin';
 import { useRemainingMs } from '../lib/useRemainingMs';
-import { LeaderboardReveal, type RevealStats } from './LeaderboardReveal';
+import { computeRevealStats } from '../lib/revealStats';
+import { LeaderboardReveal } from './LeaderboardReveal';
 import { PlayersTable } from './PlayersTable';
 import { QrScreen } from './QrScreen';
 
@@ -85,7 +87,6 @@ function StatCard({ icon, label, value, hint, tone }: StatCardProps) {
 
 export function AdminDashboard({ admin, snapshot, onExit }: AdminDashboardProps) {
   const [confirmNewRoom, setConfirmNewRoom] = useState(false);
-  const [revealOpen, setRevealOpen] = useState(false);
   const [prizeDrafts, setPrizeDrafts] = useState<string[]>(() => [...snapshot.prizes]);
   const [prizeSaved, setPrizeSaved] = useState(false);
   const [questionDrafts, setQuestionDrafts] = useState<QuestionInput[]>(() =>
@@ -100,18 +101,7 @@ export function AdminDashboard({ admin, snapshot, onExit }: AdminDashboardProps)
   const { roomState, stats, accessClosed } = snapshot;
 
   // Répartition des joueurs pour l'écran de synthèse du classement.
-  const revealStats = useMemo<RevealStats>(() => {
-    const total = snapshot.leaderboard[0]?.total ?? 5;
-    const scored = snapshot.players.filter((player) => player.score !== null);
-    return {
-      participants: snapshot.stats.total,
-      total,
-      allCorrect: scored.filter((player) => player.score === total).length,
-      someCorrect: scored.filter((player) => (player.score ?? 0) > 0 && player.score !== total)
-        .length,
-      noneCorrect: scored.filter((player) => player.score === 0).length,
-    };
-  }, [snapshot.leaderboard, snapshot.players, snapshot.stats.total]);
+  const revealStats = useMemo(() => computeRevealStats(snapshot), [snapshot]);
 
   const isFinished = roomState === 'FINISHED';
   const prizesEditable = roomState === 'WAITING' || roomState === 'FINISHED';
@@ -251,6 +241,15 @@ export function AdminDashboard({ admin, snapshot, onExit }: AdminDashboardProps)
             <span className="live-dot" />
             {connected ? 'EN DIRECT' : 'HORS LIGNE'}
           </span>
+          <a
+            className="btn btn-ghost btn-sm"
+            href="/ecran"
+            target="_blank"
+            rel="noreferrer"
+            title="Ouvrir l'écran de présentation (QR code et classement) sur un autre écran."
+          >
+            <Monitor size={16} /> ÉCRAN
+          </a>
           <button
             type="button"
             className="btn btn-ghost btn-sm"
@@ -362,9 +361,13 @@ export function AdminDashboard({ admin, snapshot, onExit }: AdminDashboardProps)
             <button
               type="button"
               className="btn btn-secondary"
-              onClick={() => setRevealOpen(true)}
-              disabled={!isFinished}
-              title={!isFinished ? 'Disponible à la fin de la room.' : undefined}
+              onClick={() => void action('show-results')}
+              disabled={!isFinished || busy}
+              title={
+                !isFinished
+                  ? 'Disponible à la fin de la room.'
+                  : "S'affiche aussi sur l'écran de présentation."
+              }
             >
               <BarChart3 size={18} /> AFFICHER LE CLASSEMENT
             </button>
@@ -577,11 +580,15 @@ export function AdminDashboard({ admin, snapshot, onExit }: AdminDashboardProps)
 
       {snapshot.display === 'qr' && <QrScreen onClose={() => void action('hide-qr')} />}
 
-      {revealOpen && isFinished && (
+      {snapshot.reveal.stage !== 'off' && (
         <LeaderboardReveal
           entries={snapshot.leaderboard}
           stats={revealStats}
-          onClose={() => setRevealOpen(false)}
+          stage={snapshot.reveal.stage}
+          calculatingUntil={snapshot.reveal.calculatingUntil}
+          countdownEndsAt={snapshot.reveal.countdownEndsAt}
+          onStartCountdown={() => void action('reveal-podium')}
+          onClose={() => void action('hide-results')}
         />
       )}
 

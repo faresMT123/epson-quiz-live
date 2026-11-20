@@ -1,40 +1,44 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Trophy, X } from 'lucide-react';
-import { formatDuration, type LeaderboardEntry } from '@shared';
+import {
+  REVEAL_CALC_MS,
+  REVEAL_COUNTDOWN_MS,
+  formatDuration,
+  type LeaderboardEntry,
+  type RevealStage,
+} from '@shared';
 import { EpsonLogo } from '../components/EpsonLogo';
+import type { RevealStats } from '../lib/revealStats';
 
-/** Décompte de l'analyse des réponses avant l'écran de synthèse. */
-const CALC_MS = 8_000;
-/** Décompte 5 → 0 avant l'affichage du podium. */
-const COUNTDOWN_MS = 5_000;
 const MEDALS = ['#f0a63c', '#cfc7dd', '#b57c50'];
-
-type Stage = 'calculating' | 'summary' | 'countdown' | 'revealed';
-
-export interface RevealStats {
-  /** Nombre de participants de la room. */
-  participants: number;
-  /** Nombre de questions du quiz. */
-  total: number;
-  /** Joueurs ayant toutes les bonnes réponses. */
-  allCorrect: number;
-  /** Joueurs ayant au moins une bonne réponse, sans avoir tout trouvé. */
-  someCorrect: number;
-  /** Joueurs sans aucune bonne réponse. */
-  noneCorrect: number;
-}
 
 interface LeaderboardRevealProps {
   entries: LeaderboardEntry[];
   stats: RevealStats;
+  /** Étape courante : le pilotage est côté serveur, tous les écrans suivent. */
+  stage: Exclude<RevealStage, 'off'>;
+  calculatingUntil: number | null;
+  countdownEndsAt: number | null;
+  onStartCountdown: () => void;
   onClose: () => void;
+  /**
+   * `false` sur l'écran de présentation : aucun bouton, l'écran se contente de
+   * suivre ce que fait l'organisateur depuis sa console de pilotage.
+   */
+  showControls?: boolean;
 }
 
-export function LeaderboardReveal({ entries, stats, onClose }: LeaderboardRevealProps) {
-  const calcEndAt = useMemo(() => Date.now() + CALC_MS, []);
-  const [stage, setStage] = useState<Stage>('calculating');
+export function LeaderboardReveal({
+  entries,
+  stats,
+  stage,
+  calculatingUntil,
+  countdownEndsAt,
+  onStartCountdown,
+  onClose,
+  showControls = true,
+}: LeaderboardRevealProps) {
   const [now, setNow] = useState(() => Date.now());
-  const [revealEndAt, setRevealEndAt] = useState<number | null>(null);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 100);
@@ -42,34 +46,22 @@ export function LeaderboardReveal({ entries, stats, onClose }: LeaderboardReveal
   }, []);
 
   useEffect(() => {
-    if (stage === 'calculating' && now >= calcEndAt) setStage('summary');
-  }, [stage, now, calcEndAt]);
-
-  useEffect(() => {
-    if (stage === 'countdown' && revealEndAt !== null && now >= revealEndAt) {
-      setStage('revealed');
-    }
-  }, [stage, now, revealEndAt]);
-
-  useEffect(() => {
+    if (!showControls) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onClose]);
+  }, [onClose, showControls]);
 
-  const calcRemaining = Math.max(0, calcEndAt - now);
+  const calcRemaining = calculatingUntil === null ? 0 : Math.max(0, calculatingUntil - now);
   const calcSeconds = Math.max(0, Math.ceil(calcRemaining / 1000));
-  const calcProgress = Math.min(100, Math.max(0, (1 - calcRemaining / CALC_MS) * 100));
+  const calcProgress = Math.min(100, Math.max(0, (1 - calcRemaining / REVEAL_CALC_MS) * 100));
 
   const countdownSeconds =
-    revealEndAt === null ? Math.ceil(COUNTDOWN_MS / 1000) : Math.max(0, Math.ceil((revealEndAt - now) / 1000));
-
-  const startCountdown = () => {
-    setRevealEndAt(Date.now() + COUNTDOWN_MS);
-    setStage('countdown');
-  };
+    countdownEndsAt === null
+      ? Math.ceil(REVEAL_COUNTDOWN_MS / 1000)
+      : Math.max(0, Math.ceil((countdownEndsAt - now) / 1000));
 
   return (
     <div
@@ -122,9 +114,11 @@ export function LeaderboardReveal({ entries, stats, onClose }: LeaderboardReveal
               Résultats disponibles dans {calcSeconds} s
             </p>
 
-            <button type="button" className="btn btn-outline calc-close" onClick={onClose}>
-              FERMER
-            </button>
+            {showControls && (
+              <button type="button" className="btn btn-outline calc-close" onClick={onClose}>
+                FERMER
+              </button>
+            )}
           </div>
         )}
 
@@ -162,15 +156,17 @@ export function LeaderboardReveal({ entries, stats, onClose }: LeaderboardReveal
               </div>
             </div>
 
-            <div className="summary-actions">
-              <button type="button" className="btn-classement" onClick={startCountdown}>
-                <Trophy size={20} />
-                CLASSEMENT DES 3 PREMIERS
-              </button>
-              <button type="button" className="btn btn-outline reveal-close" onClick={onClose}>
-                FERMER
-              </button>
-            </div>
+            {showControls && (
+              <div className="summary-actions">
+                <button type="button" className="btn-classement" onClick={onStartCountdown}>
+                  <Trophy size={20} />
+                  CLASSEMENT DES 3 PREMIERS
+                </button>
+                <button type="button" className="btn btn-outline reveal-close" onClick={onClose}>
+                  FERMER
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -182,9 +178,11 @@ export function LeaderboardReveal({ entries, stats, onClose }: LeaderboardReveal
               {countdownSeconds}
             </div>
             <p className="muted">Préparez-vous à découvrir les gagnants</p>
-            <button type="button" className="btn btn-outline" onClick={onClose}>
-              FERMER
-            </button>
+            {showControls && (
+              <button type="button" className="btn btn-outline" onClick={onClose}>
+                FERMER
+              </button>
+            )}
           </div>
         )}
 
@@ -220,9 +218,11 @@ export function LeaderboardReveal({ entries, stats, onClose }: LeaderboardReveal
               </div>
             </div>
 
-            <button type="button" className="btn btn-outline btn-lg reveal-close" onClick={onClose}>
-              FERMER
-            </button>
+            {showControls && (
+              <button type="button" className="btn btn-outline btn-lg reveal-close" onClick={onClose}>
+                FERMER
+              </button>
+            )}
           </div>
         )}
       </div>

@@ -20,6 +20,22 @@ export type PlayerPhase = 'waiting' | 'countdown' | 'quiz' | 'result';
  * `qr` affiche le QR code d'inscription sur tous les écrans connectés.
  */
 export type DisplayMode = 'off' | 'qr';
+
+/** Étapes du dévoilement du classement, pilotées côté serveur. */
+export type RevealStage = 'off' | 'calculating' | 'summary' | 'countdown' | 'revealed';
+
+/** Durée du calcul des résultats avant la synthèse. */
+export const REVEAL_CALC_MS = 8_000;
+/** Décompte 5 → 0 avant le podium. */
+export const REVEAL_COUNTDOWN_MS = 5_000;
+
+export interface AdminReveal {
+  stage: RevealStage;
+  /** Fin du calcul (epoch ms) quand `stage === 'calculating'`. */
+  calculatingUntil: number | null;
+  /** Fin du décompte (epoch ms) quand `stage === 'countdown'`. */
+  countdownEndsAt: number | null;
+}
 export type PlayerStatus = 'connected' | 'in_progress' | 'finished';
 
 export interface PublicQuestion {
@@ -123,6 +139,7 @@ export interface AdminSnapshot {
   roomId: string;
   roomState: RoomState;
   display: DisplayMode;
+  reveal: AdminReveal;
   accessClosed: boolean;
   serverNow: number;
   countdownEndsAt: number | null;
@@ -144,7 +161,10 @@ export type AdminAction =
   | 'open-access'
   | 'new-room'
   | 'show-qr'
-  | 'hide-qr';
+  | 'hide-qr'
+  | 'show-results'
+  | 'reveal-podium'
+  | 'hide-results';
 
 export type ErrorCode =
   | 'INVALID'

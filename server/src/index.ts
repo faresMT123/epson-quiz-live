@@ -234,6 +234,15 @@ io.on('connection', (socket) => {
       case 'hide-qr':
         result = game.setDisplay('off');
         break;
+      case 'show-results':
+        result = game.startReveal();
+        break;
+      case 'reveal-podium':
+        result = game.startPodiumCountdown();
+        break;
+      case 'hide-results':
+        result = game.hideReveal();
+        break;
       default:
         result = fail('INVALID', 'Action inconnue.');
     }
