@@ -30,7 +30,6 @@ import { useRemainingMs } from '../lib/useRemainingMs';
 import { computeRevealStats } from '../lib/revealStats';
 import { LeaderboardReveal } from './LeaderboardReveal';
 import { PlayersTable } from './PlayersTable';
-import { QrScreen } from './QrScreen';
 
 interface AdminDashboardProps {
   admin: AdminApi;
@@ -383,6 +382,13 @@ export function AdminDashboard({ admin, snapshot, onExit }: AdminDashboardProps)
             </button>
           </div>
 
+          {snapshot.display === 'qr' && (
+            <p className="helper-text qr-note">
+              <QrCode size={14} /> QR code affiché sur l'écran de présentation — cette console reste
+              pilotable.
+            </p>
+          )}
+
           <p className="helper-text">{helperMessage}</p>
           {error && <div className="alert alert-error">{error}</div>}
         </section>
@@ -577,8 +583,6 @@ export function AdminDashboard({ admin, snapshot, onExit }: AdminDashboardProps)
           <span>Mise à jour en direct · limitée à 1 fois par seconde</span>
         </footer>
       </main>
-
-      {snapshot.display === 'qr' && <QrScreen onClose={() => void action('hide-qr')} />}
 
       {snapshot.reveal.stage !== 'off' && (
         <LeaderboardReveal

@@ -2686,3 +2686,14 @@ code {
   color: var(--muted);
   opacity: 0.85;
 }
+
+/* Note d'état du QR sur la console de pilotage (jamais d'overlay ici) */
+.qr-note {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+  color: var(--cyan);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
