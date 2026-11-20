@@ -228,6 +228,12 @@ io.on('connection', (socket) => {
       case 'new-room':
         result = game.newRoom();
         break;
+      case 'show-qr':
+        result = game.setDisplay('qr');
+        break;
+      case 'hide-qr':
+        result = game.setDisplay('off');
+        break;
       default:
         result = fail('INVALID', 'Action inconnue.');
     }

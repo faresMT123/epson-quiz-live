@@ -5,6 +5,7 @@ import {
   type AdminSnapshot,
   type AdminPlayerRow,
   type AdminStats,
+  type DisplayMode,
   type ErrorCode,
   type JoinInput,
   type LeaderboardEntry,
@@ -70,6 +71,8 @@ function cleanText(value: unknown, maxLength: number): string | null {
 export class Game {
   private roomId = randomUUID();
   private state: RoomState = 'WAITING';
+  /** Écran présentateur (QR code) piloté depuis n'importe quelle console admin. */
+  private display: DisplayMode = 'off';
   private accessClosed = false;
   private countdownEndsAt: number | null = null;
   private quizStartedAt: number | null = null;
@@ -247,6 +250,18 @@ export class Game {
     return ok(null);
   }
 
+  /** Bascule l'écran présentateur (QR code d'inscription). */
+  setDisplay(next: DisplayMode): Outcome<null> {
+    if (next !== 'off' && next !== 'qr') {
+      return fail('INVALID', 'Écran inconnu.');
+    }
+    if (this.display === next) return ok(null);
+    this.display = next;
+    this.hooks.onPublic();
+    this.hooks.onAdmin();
+    return ok(null);
+  }
+
   newRoom(): Outcome<null> {
     if (this.state !== 'FINISHED') {
       return fail(
@@ -256,6 +271,7 @@ export class Game {
     }
     this.roomId = randomUUID();
     this.state = 'WAITING';
+    this.display = 'off';
     this.accessClosed = false;
     this.countdownEndsAt = null;
     this.quizStartedAt = null;
@@ -433,6 +449,7 @@ export class Game {
     return {
       roomId: this.roomId,
       state: this.state,
+      display: this.display,
       playerCount: this.players.size,
       connectedCount,
       accessClosed: this.accessClosed,
@@ -514,6 +531,7 @@ export class Game {
     return {
       roomId: this.roomId,
       roomState: this.state,
+      display: this.display,
       accessClosed: this.accessClosed,
       serverNow: Date.now(),
       countdownEndsAt: this.countdownEndsAt,

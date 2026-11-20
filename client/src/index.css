@@ -2507,3 +2507,136 @@ code {
     font-size: 0.85rem;
   }
 }
+
+/* ------------------------------------------------------------------
+   Écran QR — présentateur plein écran piloté depuis une console admin
+   ------------------------------------------------------------------ */
+
+.qr-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  padding: clamp(14px, 3vh, 34px);
+  background:
+    radial-gradient(900px 520px at 50% -8%, rgba(202, 38, 165, 0.55), transparent 62%),
+    radial-gradient(760px 520px at 50% 26%, rgba(91, 33, 182, 0.45), transparent 70%),
+    radial-gradient(1000px 700px at 50% 120%, rgba(120, 20, 90, 0.32), transparent 70%),
+    #07030d;
+  animation: fade 200ms ease both;
+}
+
+.qr-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(6px, 1.4vh, 14px);
+  text-align: center;
+}
+
+.qr-title-row {
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 2vw, 22px);
+}
+
+.qr-rule {
+  width: clamp(34px, 10vw, 150px);
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, rgba(255, 46, 154, 0), #ff2e9a);
+  box-shadow: 0 0 12px rgba(255, 46, 154, 0.8);
+}
+
+.qr-rule.is-right {
+  background: linear-gradient(270deg, rgba(255, 46, 154, 0), #ff2e9a);
+}
+
+.qr-title {
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  letter-spacing: 0.16em;
+  color: #f4ecff;
+  text-shadow: 0 0 22px rgba(255, 46, 154, 0.45);
+}
+
+.qr-scan {
+  font-size: clamp(0.62rem, 1.3vw, 0.82rem);
+  font-weight: 800;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.qr-card {
+  margin-top: clamp(4px, 1vh, 12px);
+  width: min(56vh, 76vw);
+  padding: clamp(10px, 1.8vw, 20px);
+  border-radius: 26px;
+  background: #fff;
+  box-shadow:
+    0 0 0 1.6px rgba(42, 231, 255, 0.75),
+    var(--glow-cyan-strong),
+    0 30px 80px -28px #000;
+}
+
+.qr-code {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+}
+
+.qr-code > img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border-radius: 8px;
+  image-rendering: pixelated;
+}
+
+.qr-placeholder {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.qr-badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(6px, 1vw, 12px) clamp(12px, 2vw, 22px);
+  border-radius: clamp(10px, 1.6vw, 18px);
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.qr-badge img {
+  display: block;
+  width: auto;
+  height: clamp(18px, 4.4vh, 34px);
+}
+
+.qr-url {
+  font-size: clamp(0.7rem, 1.5vw, 0.86rem);
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  word-break: break-all;
+}
+
+.qr-close {
+  margin-top: 2px;
+}
+
+@media (max-height: 640px) {
+  .qr-card {
+    width: min(44vh, 72vw);
+  }
+}

@@ -8,6 +8,7 @@ import {
   LogOut,
   Plus,
   PlayCircle,
+  QrCode,
   RefreshCcw,
   Save,
   Timer,
@@ -27,6 +28,7 @@ import type { AdminApi } from '../lib/useAdmin';
 import { useRemainingMs } from '../lib/useRemainingMs';
 import { LeaderboardReveal, type RevealStats } from './LeaderboardReveal';
 import { PlayersTable } from './PlayersTable';
+import { QrScreen } from './QrScreen';
 
 interface AdminDashboardProps {
   admin: AdminApi;
@@ -349,6 +351,17 @@ export function AdminDashboard({ admin, snapshot, onExit }: AdminDashboardProps)
             <button
               type="button"
               className="btn btn-secondary"
+              onClick={() => void action(snapshot.display === 'qr' ? 'hide-qr' : 'show-qr')}
+              disabled={busy}
+              title="Affiche le QR code d'inscription sur tous les écrans admin connectés."
+            >
+              <QrCode size={18} />
+              {snapshot.display === 'qr' ? 'MASQUER LE QR CODE' : 'AFFICHER LE QR CODE'}
+            </button>
+
+            <button
+              type="button"
+              className="btn btn-secondary"
               onClick={() => setRevealOpen(true)}
               disabled={!isFinished}
               title={!isFinished ? 'Disponible à la fin de la room.' : undefined}
@@ -561,6 +574,8 @@ export function AdminDashboard({ admin, snapshot, onExit }: AdminDashboardProps)
           <span>Mise à jour en direct · limitée à 1 fois par seconde</span>
         </footer>
       </main>
+
+      {snapshot.display === 'qr' && <QrScreen onClose={() => void action('hide-qr')} />}
 
       {revealOpen && isFinished && (
         <LeaderboardReveal

@@ -14,6 +14,12 @@ export const COUNTDOWN_MS = 5_000;
 export const QUIZ_DURATION_MS = 60_000;
 
 export type PlayerPhase = 'waiting' | 'countdown' | 'quiz' | 'result';
+
+/**
+ * Écran présentateur, partagé entre toutes les consoles admin.
+ * `qr` affiche le QR code d'inscription sur tous les écrans connectés.
+ */
+export type DisplayMode = 'off' | 'qr';
 export type PlayerStatus = 'connected' | 'in_progress' | 'finished';
 
 export interface PublicQuestion {
@@ -59,6 +65,7 @@ export interface PlayerSession {
 export interface PublicRoom {
   roomId: string;
   state: RoomState;
+  display: DisplayMode;
   playerCount: number;
   connectedCount: number;
   accessClosed: boolean;
@@ -115,6 +122,7 @@ export interface AdminQuestion extends QuestionInput {
 export interface AdminSnapshot {
   roomId: string;
   roomState: RoomState;
+  display: DisplayMode;
   accessClosed: boolean;
   serverNow: number;
   countdownEndsAt: number | null;
@@ -130,7 +138,13 @@ export interface AdminSnapshot {
   prizes: string[];
 }
 
-export type AdminAction = 'start' | 'close-access' | 'open-access' | 'new-room';
+export type AdminAction =
+  | 'start'
+  | 'close-access'
+  | 'open-access'
+  | 'new-room'
+  | 'show-qr'
+  | 'hide-qr';
 
 export type ErrorCode =
   | 'INVALID'
