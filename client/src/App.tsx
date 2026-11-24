@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { unlockSfx } from './lib/sfx';
 import { AdminApp } from './screens/AdminApp';
 import { PlayerApp } from './screens/PlayerApp';
 import { PresenterApp } from './screens/PresenterApp';
@@ -15,6 +16,18 @@ export function App() {
     const onPopState = () => setPath(normalizePath(window.location.pathname));
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  // Les navigateurs n'autorisent le son qu'après une interaction : on débloque
+  // l'AudioContext au premier geste, quel qu'il soit.
+  useEffect(() => {
+    const unlock = () => unlockSfx();
+    window.addEventListener('pointerdown', unlock, { once: true });
+    window.addEventListener('keydown', unlock, { once: true });
+    return () => {
+      window.removeEventListener('pointerdown', unlock);
+      window.removeEventListener('keydown', unlock);
+    };
   }, []);
 
   const navigate = (to: string) => {

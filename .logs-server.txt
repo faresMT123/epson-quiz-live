@@ -1,0 +1,7 @@
+
+> server@1.0.0 start
+> tsx src/index.ts
+
+[server] Epson Quiz Live à l'écoute sur http://localhost:3001
+[server] Client statique servi depuis C:\Users\MSI\Desktop\epsonsansbase\client\dist
+[server] Origines CORS : http://localhost:5173, http://localhost:4173

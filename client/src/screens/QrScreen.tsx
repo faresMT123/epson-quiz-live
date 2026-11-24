@@ -8,9 +8,9 @@ interface QrScreenProps {
 }
 
 /**
- * Écran présentateur plein écran : logo Epson, « QUIZ TIME », « SCAN TO PLAY »
- * et le QR code d'inscription. Il s'affiche sur TOUS les écrans admin dès qu'un
- * organisateur lance l'affichage (téléphone → écran du PC, par exemple).
+ * Écran présentateur plein écran : signature Epson × STCI, « QUIZ TIME »,
+ * « SCAN TO PLAY » et le QR code d'inscription. Il s'affiche sur TOUS les
+ * écrans admin dès qu'un organisateur lance l'affichage.
  */
 export function QrScreen({ onClose }: QrScreenProps) {
   const url = joinUrl();
@@ -18,9 +18,10 @@ export function QrScreen({ onClose }: QrScreenProps) {
   return (
     <div className="qr-screen" role="dialog" aria-modal="true" aria-label="QR code du quiz">
       <div className="qr-stage">
-        <div className="qr-brand">
-          <EpsonLogo height={40} />
-        </div>
+        <header className="qr-brand">
+          <EpsonLogo height={38} />
+          <p className="qr-brand-line">Quiz interactif officiel</p>
+        </header>
 
         <div className="qr-title-row">
           <span className="qr-rule" />
@@ -28,7 +29,7 @@ export function QrScreen({ onClose }: QrScreenProps) {
           <span className="qr-rule is-right" />
         </div>
 
-        <p className="qr-scan">SCAN TO PLAY</p>
+        <p className="qr-scan">Scannez pour jouer</p>
 
         <div className="qr-card">
           <JoinQr url={url} />
@@ -36,17 +37,17 @@ export function QrScreen({ onClose }: QrScreenProps) {
 
         <p className="qr-url">{url.replace(/^https?:\/\//, '')}</p>
 
-        {onClose && (
+        {onClose ? (
           <button type="button" className="btn btn-ghost btn-sm qr-close" onClick={onClose}>
             <X size={16} /> MASQUER LE QR CODE
           </button>
-        )}
-
-        {!onClose && (
+        ) : (
           <span className="qr-remote">
             <QrCode size={14} /> Affichage piloté depuis la console organisateur
           </span>
         )}
+
+        <p className="qr-footnote">Epson × STCI</p>
       </div>
     </div>
   );

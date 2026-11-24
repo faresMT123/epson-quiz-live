@@ -1,0 +1,12 @@
+
+> epson-quiz-live@1.0.0 typecheck
+> npm run typecheck -w server && npm run typecheck -w client
+
+
+> server@1.0.0 typecheck
+> tsc --noEmit
+
+
+> client@1.0.0 typecheck
+> tsc --noEmit
+

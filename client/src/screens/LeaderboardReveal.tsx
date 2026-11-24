@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Trophy, X } from 'lucide-react';
+import { useEffect, useState, type CSSProperties } from 'react';
+import { Gift, Trophy, X } from 'lucide-react';
 import {
   REVEAL_CALC_MS,
   REVEAL_COUNTDOWN_MS,
@@ -9,8 +9,9 @@ import {
 } from '@shared';
 import { EpsonLogo } from '../components/EpsonLogo';
 import type { RevealStats } from '../lib/revealStats';
+import { sfxDangerStart, sfxDangerTick, sfxCountdownTick, sfxPodium, sfxSummary } from '../lib/sfx';
 
-const MEDALS = ['#f0a63c', '#cfc7dd', '#b57c50'];
+const PLACES = ['1re place', '2e place', '3e place'];
 
 interface LeaderboardRevealProps {
   entries: LeaderboardEntry[];
@@ -45,6 +46,13 @@ export function LeaderboardReveal({
     return () => window.clearInterval(timer);
   }, []);
 
+  // Sons du dévoilement : alerte d'analyse, synthèse, décompte puis podium.
+  useEffect(() => {
+    if (stage === 'calculating') sfxDangerStart();
+    else if (stage === 'summary') sfxSummary();
+    else if (stage === 'revealed') sfxPodium();
+  }, [stage]);
+
   useEffect(() => {
     if (!showControls) return;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -63,6 +71,18 @@ export function LeaderboardReveal({
       ? Math.ceil(REVEAL_COUNTDOWN_MS / 1000)
       : Math.max(0, Math.ceil((countdownEndsAt - now) / 1000));
 
+  // Tic à chaque seconde du décompte 5 → 0 avant le podium.
+  useEffect(() => {
+    if (stage !== 'countdown' || countdownSeconds === 0) return;
+    sfxCountdownTick(countdownSeconds === 1);
+  }, [stage, countdownSeconds]);
+
+  // Pulse « danger zone » pendant les 8 secondes d'analyse des résultats.
+  useEffect(() => {
+    if (stage !== 'calculating' || calcSeconds === 0) return;
+    sfxDangerTick(calcSeconds);
+  }, [stage, calcSeconds]);
+
   return (
     <div
       className="modal-backdrop reveal-backdrop"
@@ -73,6 +93,7 @@ export function LeaderboardReveal({
       <div className="reveal-modal">
         <header className="reveal-brand">
           <EpsonLogo height={30} />
+          <p className="reveal-tagline">Classement officiel</p>
         </header>
 
         {stage === 'calculating' && (
@@ -187,27 +208,45 @@ export function LeaderboardReveal({
             <p className="reveal-sub">Les 3 premiers de la room</p>
 
             <div className="reveal-podium-frame">
-              <div className="gift-podium">
-                {entries.slice(0, 3).map((entry) => (
-                  <article key={entry.playerId} className={`gift-card rank-${entry.rank}`}>
-                    <span className="gift-medal" style={{ background: MEDALS[entry.rank - 1] }}>
-                      <span className="gift-medal-ribbon" />
-                      <span className="gift-medal-number">{entry.rank}</span>
-                    </span>
-                    <h3 className="gift-name">
+              <div className="reveal-podium">
+                {entries.slice(0, 3).map((entry, slot) => (
+                  <article
+                    key={entry.playerId}
+                    className={`podium-card rank-${entry.rank}`}
+                    style={{ '--slot': slot } as CSSProperties}
+                  >
+                    <div className="podium-rank">
+                      <span className="podium-medal" aria-hidden="true">
+                        {entry.rank}
+                      </span>
+                      <span className="podium-place">{PLACES[entry.rank - 1]}</span>
+                    </div>
+
+                    <h3 className="podium-name">
                       {entry.firstName} {entry.lastName}
                     </h3>
-                    <p className="gift-meta">
-                      {entry.score}/{entry.total} · {formatDuration(entry.durationMs)}
-                    </p>
-                    <div className="gift-box">
-                      <span className="gift-box-rank">{entry.rank}</span>
-                      <p>
-                        <span className="gift-icon" aria-hidden="true">
-                          🎁
-                        </span>
-                        {entry.gift?.replace(/^[🎁\s]+/u, '') || 'Cadeau à annoncer'}
-                      </p>
+                    <p className="podium-company">{entry.company}</p>
+
+                    <div className="podium-stats">
+                      <span>
+                        <strong>
+                          {entry.score}/{entry.total}
+                        </strong>{' '}
+                        bonnes réponses
+                      </span>
+                      <span>{formatDuration(entry.durationMs)}</span>
+                    </div>
+
+                    <div className="podium-gift">
+                      <span className="podium-gift-icon" aria-hidden="true">
+                        <Gift size={18} />
+                      </span>
+                      <div>
+                        <span className="podium-gift-label">Cadeau</span>
+                        <p className="podium-gift-text">
+                          {entry.gift?.replace(/^[🎁\s]+/u, '') || 'Cadeau à annoncer'}
+                        </p>
+                      </div>
                     </div>
                   </article>
                 ))}

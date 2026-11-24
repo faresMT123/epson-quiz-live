@@ -61,6 +61,16 @@ const fail = (code: ErrorCode, message: string): Outcome<never> => ({
   message,
 });
 
+/** Mélange une copie de la liste (Fisher–Yates). */
+function shuffle<T>(items: T[]): T[] {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
 /** Nettoie et valide un champ texte libre. */
 function cleanText(value: unknown, maxLength: number): string | null {
   if (typeof value !== 'string') return null;
@@ -95,6 +105,8 @@ export class Game {
     ...question,
     options: [...question.options],
   }));
+  /** Ordre mélangé servi aux joueurs, retiré au départ de chaque partie. */
+  private playQuestions: Question[] = [];
 
   constructor(private readonly hooks: GameHooks) {}
 
@@ -236,6 +248,8 @@ export class Game {
     if (this.players.size === 0) {
       return fail('NO_PLAYERS', 'Aucun joueur connecté pour démarrer le quiz.');
     }
+    // Nouvel ordre aléatoire à chaque partie (identique pour tous les joueurs).
+    this.playQuestions = shuffle(this.questions);
     this.state = 'COUNTDOWN';
     this.countdownEndsAt = Date.now() + COUNTDOWN_MS;
     for (const player of this.players.values()) {
@@ -325,6 +339,7 @@ export class Game {
     this.accessClosed = false;
     this.countdownEndsAt = null;
     this.quizStartedAt = null;
+    this.playQuestions = [];
     this.players.clear();
     // Les cadeaux sont volontairement conservés pour les nouvelles rooms.
     this.hooks.onPublic();
@@ -541,9 +556,10 @@ export class Game {
     const countdownEndsAt =
       phase === 'countdown' ? (player.pendingStartAt ?? this.countdownEndsAt) : null;
 
+    const served = this.playQuestions.length > 0 ? this.playQuestions : this.questions;
     const questions: PublicQuestion[] | null =
       phase === 'quiz' || phase === 'result'
-        ? this.questions.map((question) => ({
+        ? served.map((question) => ({
             id: question.id,
             prompt: question.prompt,
             options: [...question.options],

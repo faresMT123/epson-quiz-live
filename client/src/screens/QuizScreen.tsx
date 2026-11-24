@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Check, CheckCircle2, ChevronRight, Loader2, Star, Timer } from 'lucide-react';
 import type { PlayerSession } from '@shared';
 import { EpsonLogo } from '../components/EpsonLogo';
+import { sfxCountdownTick } from '../lib/sfx';
 import { useRemainingMs } from '../lib/useRemainingMs';
 
 interface QuizScreenProps {
@@ -50,6 +51,11 @@ export function QuizScreen({ session, onAnswer, onFinish }: QuizScreenProps) {
   useEffect(() => {
     if (remaining <= 0) void submit();
   }, [remaining, submit]);
+
+  // Tics des cinq dernières secondes du chrono de 60 s.
+  useEffect(() => {
+    if (totalSeconds > 0 && totalSeconds <= 5) sfxCountdownTick(totalSeconds === 1);
+  }, [totalSeconds]);
 
   useEffect(
     () => () => {
