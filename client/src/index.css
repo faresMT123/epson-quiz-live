@@ -2699,6 +2699,31 @@ code {
   right: 0;
   height: 3px;
   background: var(--brand-grad);
+  box-shadow: 0 0 26px rgba(53, 184, 240, 0.5);
+}
+
+/* Reflet de lumière qui balaie lentement la carte (au-dessus du contenu,
+   mais transparent au clic). */
+.qr-stage::after {
+  content: '';
+  position: absolute;
+  top: -40%;
+  bottom: -40%;
+  left: -45%;
+  width: 38%;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(120, 200, 255, 0.08) 32%,
+    rgba(255, 255, 255, 0.17) 50%,
+    rgba(120, 200, 255, 0.08) 68%,
+    transparent
+  );
+  filter: blur(2px);
+  transform: skewX(-18deg);
+  animation: qrSheen 7.5s ease-in-out 1.4s infinite;
 }
 
 .qr-brand {
@@ -2729,6 +2754,7 @@ code {
   height: 2px;
   border-radius: 2px;
   background: linear-gradient(90deg, rgba(53, 184, 240, 0), #35b8f0);
+  box-shadow: 0 0 14px rgba(53, 184, 240, 0.45);
 }
 
 .qr-rule.is-right {
@@ -2739,8 +2765,19 @@ code {
   font-size: clamp(1.4rem, 4vw, 2.4rem);
   letter-spacing: 0.16em;
   padding-left: 0.16em;
-  color: #f2f8ff;
-  text-shadow: none;
+  background: linear-gradient(
+    100deg,
+    #eaf6ff 0%,
+    #ffffff 34%,
+    #b9e4ff 50%,
+    #ffffff 66%,
+    #eaf6ff 100%
+  );
+  background-size: 240% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: qrTitleShine 6s ease-in-out infinite;
 }
 
 .qr-scan {
@@ -2750,9 +2787,17 @@ code {
   padding-left: 0.32em;
   text-transform: uppercase;
   color: var(--cyan);
+  text-shadow: 0 0 18px rgba(24, 200, 216, 0.4);
+}
+
+@property --qr-ring-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
 }
 
 .qr-card {
+  position: relative;
   margin-top: clamp(4px, 1vh, 12px);
   width: min(52vh, 74vw, 400px);
   padding: clamp(10px, 1.6vw, 18px);
@@ -2760,7 +2805,35 @@ code {
   background: #ffffff;
   box-shadow:
     0 0 0 1.5px rgba(53, 184, 240, 0.55),
-    0 26px 60px -26px #000;
+    0 26px 60px -26px #000,
+    0 0 54px -6px rgba(24, 200, 216, 0.35);
+  animation: qrHalo 5.6s ease-in-out infinite;
+}
+
+/* Anneau de lumière qui tourne autour du QR, à l'extérieur du cadre blanc
+   (aucune lumière sur les modules : le scan reste parfaitement lisible). */
+.qr-card::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 26px;
+  padding: 2px;
+  pointer-events: none;
+  background: conic-gradient(
+    from var(--qr-ring-angle),
+    rgba(53, 184, 240, 0) 0deg,
+    rgba(53, 184, 240, 0) 208deg,
+    rgba(24, 200, 216, 0.85) 268deg,
+    rgba(255, 255, 255, 0.95) 292deg,
+    rgba(53, 150, 240, 0) 330deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: qrRingSpin 7s linear infinite;
 }
 
 .qr-code {
@@ -2840,6 +2913,62 @@ code {
   padding-left: 0.34em;
   text-transform: uppercase;
   color: rgba(147, 170, 198, 0.6);
+}
+
+@keyframes qrSheen {
+  0% {
+    left: -45%;
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  58%,
+  100% {
+    left: 118%;
+    opacity: 0;
+  }
+}
+
+@keyframes qrRingSpin {
+  to {
+    --qr-ring-angle: 360deg;
+  }
+}
+
+@keyframes qrHalo {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1.5px rgba(53, 184, 240, 0.55),
+      0 26px 60px -26px #000,
+      0 0 44px -8px rgba(24, 200, 216, 0.28);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1.5px rgba(53, 184, 240, 0.75),
+      0 26px 60px -26px #000,
+      0 0 74px -4px rgba(24, 200, 216, 0.55);
+  }
+}
+
+@keyframes qrTitleShine {
+  0%,
+  100% {
+    background-position: 135% 0;
+  }
+  50% {
+    background-position: -35% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qr-stage::after,
+  .qr-card,
+  .qr-card::before,
+  .qr-title {
+    animation: none;
+  }
 }
 
 @media (max-height: 700px) {
