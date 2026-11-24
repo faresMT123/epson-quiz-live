@@ -128,17 +128,56 @@ code {
    ------------------------------------------------------------------ */
 
 .logo-plate {
+  --logo-scale: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 4px 2px;
+  max-width: 100%;
   background: transparent;
 }
 
 .epson-logo {
   display: block;
+  height: calc(var(--logo-h, 32px) * var(--logo-scale));
   width: auto;
   max-width: 230px;
+  object-fit: contain;
+  user-select: none;
+}
+
+/* Verrouillage Epson + partenaire STCI, présent sur toutes les interfaces. */
+.logo-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(10px * var(--logo-scale));
+  max-width: 100%;
+  min-width: 0;
+}
+
+.logo-sep {
+  flex: none;
+  width: 1px;
+  height: calc(var(--logo-h, 32px) * var(--logo-scale) * 0.92);
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.logo-partner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  height: calc(var(--logo-h, 32px) * var(--logo-scale) * 1.16);
+  padding: 0;
+  background: transparent;
+}
+
+.stci-logo {
+  display: block;
+  height: 100%;
+  width: auto;
+  max-width: 240px;
   object-fit: contain;
   user-select: none;
 }
@@ -1245,6 +1284,10 @@ code {
   gap: 10px;
 }
 
+.controls-row .btn {
+  min-width: 0;
+}
+
 .helper-text {
   font-size: 0.78rem;
   color: var(--muted);
@@ -2284,6 +2327,16 @@ code {
   .admin-header {
     padding: 12px 14px;
     gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .admin-brand {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .logo-lockup {
+    gap: 8px;
   }
 
   .admin-title .eyebrow {
@@ -2346,9 +2399,30 @@ code {
     gap: 8px;
   }
 
+  /* Deux colonnes régulières : les libellés longs passent à la ligne au lieu
+     de déborder de leur bouton (bug d'affichage sur téléphone). */
+  .controls-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
   .controls-row .btn {
-    flex: 1 1 calc(50% - 5px);
-    min-width: 140px;
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    min-height: 52px;
+    padding: 10px 10px;
+    gap: 7px;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    line-height: 1.25;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .controls-row .btn svg {
+    flex: none;
   }
 
   .table-card {
@@ -2490,6 +2564,19 @@ code {
 
   .modal-actions .btn {
     width: 100%;
+  }
+}
+
+/* Le duo de logos rétrécit avant de déborder de l'écran. */
+@media (max-width: 380px) {
+  .logo-plate {
+    --logo-scale: 0.86;
+  }
+}
+
+@media (max-width: 340px) {
+  .logo-plate {
+    --logo-scale: 0.76;
   }
 }
 
