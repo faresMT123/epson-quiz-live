@@ -155,6 +155,54 @@ export interface AdminSnapshot {
   prizes: string[];
 }
 
+/** Ligne joueur d'un rapport de room (export PDF). */
+export interface RoomReportPlayer {
+  /** Rang au classement, ou null si le joueur n'a pas terminé. */
+  rank: number | null;
+  firstName: string;
+  lastName: string;
+  company: string;
+  status: PlayerStatus;
+  score: number | null;
+  total: number;
+  durationMs: number | null;
+  answeredCount: number;
+  autoClosed: boolean;
+  joinedAt: number;
+}
+
+/** Chiffres clés d'une room pour le rapport. */
+export interface RoomReportStats {
+  participants: number;
+  finished: number;
+  /** Joueurs ayant toutes les réponses justes (parmi les joueurs terminés). */
+  allCorrect: number;
+  /** Joueurs ayant au moins une réponse juste (parmi les joueurs terminés). */
+  atLeastOneCorrect: number;
+  /** Joueurs sans aucune réponse juste (parmi les joueurs terminés). */
+  noneCorrect: number;
+  averageScore: number | null;
+  averageDurationMs: number | null;
+}
+
+/** Rapport complet d'une room : classement, podium et répartition des réponses. */
+export interface RoomReport {
+  roomId: string;
+  /** Numéro de la room dans la session (1, 2, 3…). */
+  index: number;
+  label: string;
+  state: RoomState;
+  openedAt: number;
+  finishedAt: number | null;
+  questionCount: number;
+  prizes: string[];
+  stats: RoomReportStats;
+  /** Les trois premiers du classement (0 à 3 entrées). */
+  top3: RoomReportPlayer[];
+  /** Classement complet, joueurs non terminés à la suite. */
+  players: RoomReportPlayer[];
+}
+
 export type AdminAction =
   | 'start'
   | 'close-access'
@@ -212,6 +260,10 @@ export interface ClientToServerEvents {
   'admin:set-questions': (
     payload: { token: string; questions: QuestionInput[] },
     cb: (res: Outcome<null>) => void,
+  ) => void;
+  'admin:report': (
+    payload: { token: string; roomId?: string },
+    cb: (res: Outcome<RoomReport[]>) => void,
   ) => void;
   'player:join': (payload: JoinInput, cb: (res: Outcome<PlayerSession>) => void) => void;
   'player:resume': (

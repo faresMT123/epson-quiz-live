@@ -207,6 +207,16 @@ io.on('connection', (socket) => {
     return reply(cb, result);
   });
 
+  socket.on('admin:report', (payload, cb) => {
+    const token = typeof payload?.token === 'string' ? payload.token : '';
+    if (!token || token !== socket.data.adminToken || !adminTokens.has(token)) {
+      return reply(cb, fail('UNAUTHORIZED', 'Session administrateur invalide.'));
+    }
+    const roomId =
+      typeof payload?.roomId === 'string' && payload.roomId.length > 0 ? payload.roomId : undefined;
+    return reply(cb, ok(game.reports(roomId)));
+  });
+
   socket.on('admin:action', (payload, cb) => {
     const token = typeof payload?.token === 'string' ? payload.token : '';
     if (!token || token !== socket.data.adminToken || !adminTokens.has(token)) {

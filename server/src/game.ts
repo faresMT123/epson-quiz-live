@@ -18,6 +18,8 @@ import {
   type PublicQuestion,
   type PublicRoom,
   type RevealStage,
+  type RoomReport,
+  type RoomReportPlayer,
   type RoomState,
 } from '../../shared/src/index';
 import { QUESTIONS as DEFAULT_QUESTIONS, type Question } from './questions';
@@ -107,6 +109,12 @@ export class Game {
   }));
   /** Ordre mélangé servi aux joueurs, retiré au départ de chaque partie. */
   private playQuestions: Question[] = [];
+  /** Numéro de la room courante (1, 2, 3…). */
+  private roomIndex = 1;
+  private roomOpenedAt = Date.now();
+  private finishedAt: number | null = null;
+  /** Rooms terminées conservées pour les rapports (50 dernières). */
+  private readonly archivedReports: RoomReport[] = [];
 
   constructor(private readonly hooks: GameHooks) {}
 
@@ -332,7 +340,16 @@ export class Game {
         "La room actuelle n'est pas terminée : « Nouvelle room » est indisponible.",
       );
     }
+    // Archive la room terminée avant de réinitialiser la mémoire.
+    const previous = this.buildReport();
+    if (previous.players.length > 0) {
+      this.archivedReports.push(previous);
+      if (this.archivedReports.length > 50) this.archivedReports.shift();
+    }
     this.roomId = randomUUID();
+    this.roomIndex += 1;
+    this.roomOpenedAt = Date.now();
+    this.finishedAt = null;
     this.state = 'WAITING';
     this.display = 'off';
     this.resetReveal();
@@ -521,6 +538,7 @@ export class Game {
       if (player.submittedAt === null) return;
     }
     this.state = 'FINISHED';
+    this.finishedAt = Date.now();
     this.hooks.onPublic();
     this.hooks.onAdmin();
   }
@@ -684,6 +702,98 @@ export class Game {
         durationMs: player.durationMs ?? 0,
         gift: index < 3 ? this.prizes[index] || null : null,
       }));
+  }
+
+  /* ----------------------------------------------------------------- */
+  /* Rapports (export PDF)                                              */
+  /* ----------------------------------------------------------------- */
+
+  /**
+   * Rapports disponibles : rooms archivées puis room courante.
+   * Sans `roomId`, renvoie tout l'historique de la session.
+   */
+  reports(roomId?: string): RoomReport[] {
+    const current = this.buildReport();
+    if (roomId) {
+      return [...this.archivedReports, current].filter((report) => report.roomId === roomId);
+    }
+    const includeCurrent = current.players.length > 0 || this.state !== 'WAITING';
+    return includeCurrent ? [...this.archivedReports, current] : [...this.archivedReports];
+  }
+
+  private buildReport(): RoomReport {
+    const questionCount = this.questions.length;
+
+    const finished = [...this.players.values()]
+      .filter(
+        (player) =>
+          player.submittedAt !== null && player.score !== null && player.durationMs !== null,
+      )
+      .sort((a, b) => {
+        const byScore = (b.score ?? 0) - (a.score ?? 0);
+        if (byScore !== 0) return byScore;
+        const byTime = (a.durationMs ?? 0) - (b.durationMs ?? 0);
+        if (byTime !== 0) return byTime;
+        return a.lastName.localeCompare(b.lastName, 'fr');
+      });
+
+    const pending = [...this.players.values()]
+      .filter((player) => player.submittedAt === null)
+      .sort((a, b) => a.joinedAt - b.joinedAt);
+
+    const row = (player: Player, rank: number | null): RoomReportPlayer => ({
+      rank,
+      firstName: player.firstName,
+      lastName: player.lastName,
+      company: player.company,
+      status:
+        player.submittedAt !== null
+          ? 'finished'
+          : player.startedHr !== null
+            ? 'in_progress'
+            : 'connected',
+      score: player.score,
+      total: player.total ?? questionCount,
+      durationMs: player.durationMs,
+      answeredCount: Object.keys(player.answers).length,
+      autoClosed: player.autoClosed,
+      joinedAt: player.joinedAt,
+    });
+
+    const players = [
+      ...finished.map((player, position) => row(player, position + 1)),
+      ...pending.map((player) => row(player, null)),
+    ];
+
+    const allCorrect = finished.filter(
+      (player) => (player.score ?? 0) === (player.total ?? questionCount),
+    ).length;
+    const atLeastOneCorrect = finished.filter((player) => (player.score ?? 0) > 0).length;
+    const noneCorrect = finished.filter((player) => (player.score ?? 0) === 0).length;
+    const average = (values: number[]): number | null =>
+      values.length > 0 ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
+
+    return {
+      roomId: this.roomId,
+      index: this.roomIndex,
+      label: `Room ${this.roomIndex}`,
+      state: this.state,
+      openedAt: this.roomOpenedAt,
+      finishedAt: this.finishedAt,
+      questionCount,
+      prizes: [...this.prizes],
+      stats: {
+        participants: this.players.size,
+        finished: finished.length,
+        allCorrect,
+        atLeastOneCorrect,
+        noneCorrect,
+        averageScore: average(finished.map((player) => player.score ?? 0)),
+        averageDurationMs: average(finished.map((player) => player.durationMs ?? 0)),
+      },
+      top3: players.slice(0, Math.min(3, finished.length)),
+      players,
+    };
   }
 
   private resultOf(player: Player): PlayerResult {

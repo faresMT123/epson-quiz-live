@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { AdminAction, AdminSnapshot, QuestionInput } from '@shared';
+import type { AdminAction, AdminSnapshot, QuestionInput, RoomReport } from '@shared';
 import { socket, syncServerClock } from './socket';
 import { clearAdminToken, loadAdminToken, saveAdminToken } from './storage';
 
@@ -13,6 +13,8 @@ export interface AdminApi {
   action: (action: AdminAction) => Promise<void>;
   savePrizes: (prizes: string[]) => Promise<boolean>;
   saveQuestions: (questions: QuestionInput[]) => Promise<boolean>;
+  /** Récupère les rapports des rooms (historique + room courante) pour l'export PDF. */
+  requestReport: (roomId?: string) => Promise<RoomReport[] | null>;
   logout: () => void;
 }
 
@@ -121,6 +123,24 @@ export function useAdmin(): AdminApi {
     [token],
   );
 
+  const requestReport = useCallback(
+    async (roomId?: string) => {
+      if (!token) return null;
+      const reports = await new Promise<RoomReport[] | null>((resolve) => {
+        socket.emit('admin:report', { token, roomId }, (res) => {
+          if (res.ok) {
+            resolve(res.data);
+          } else {
+            setError(res.message);
+            resolve(null);
+          }
+        });
+      });
+      return reports;
+    },
+    [token],
+  );
+
   const logout = useCallback(() => {
     clearAdminToken();
     setToken(null);
@@ -138,6 +158,7 @@ export function useAdmin(): AdminApi {
     action,
     savePrizes,
     saveQuestions,
+    requestReport,
     logout,
   };
 }

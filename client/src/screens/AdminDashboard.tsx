@@ -31,6 +31,7 @@ import { computeRevealStats } from '../lib/revealStats';
 import { LeaderboardReveal } from './LeaderboardReveal';
 import { PlayersTable } from './PlayersTable';
 import { QrScreen } from './QrScreen';
+import { ReportsCard } from './ReportsCard';
 
 interface AdminDashboardProps {
   admin: AdminApi;
@@ -100,7 +101,8 @@ export function AdminDashboard({ admin, snapshot, onExit }: AdminDashboardProps)
   // Le QR s'affiche uniquement sur la console qui l'a demandé : les autres
   // consoles admin gardent leur interface normale.
   const [qrVisible, setQrVisible] = useState(false);
-  const { action, error, busy, connected, logout, savePrizes, saveQuestions } = admin;
+  const { action, error, busy, connected, logout, savePrizes, saveQuestions, requestReport } =
+    admin;
   const { roomState, stats, accessClosed } = snapshot;
 
   // Répartition des joueurs pour l'écran de synthèse du classement.
@@ -580,6 +582,8 @@ export function AdminDashboard({ admin, snapshot, onExit }: AdminDashboardProps)
         </section>
 
         <PlayersTable players={snapshot.players} />
+
+        <ReportsCard snapshot={snapshot} requestReport={requestReport} />
 
         <footer className="admin-foot">
           <span>
