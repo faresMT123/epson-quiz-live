@@ -1,10 +1,12 @@
-import { QrCode, X } from 'lucide-react';
+import { QrCode, Users, X } from 'lucide-react';
 import { EpsonLogo } from '../components/EpsonLogo';
 import { JoinQr, joinUrl } from '../components/JoinQr';
 
 interface QrScreenProps {
   /** Absent = écran piloté à distance : aucun bouton, il suit l'organisateur. */
   onClose?: () => void;
+  /** Nombre de joueurs déjà inscrits dans la room. */
+  playerCount?: number;
 }
 
 /**
@@ -12,7 +14,7 @@ interface QrScreenProps {
  * « SCAN TO PLAY » et le QR code d'inscription. Il s'affiche sur TOUS les
  * écrans admin dès qu'un organisateur lance l'affichage.
  */
-export function QrScreen({ onClose }: QrScreenProps) {
+export function QrScreen({ onClose, playerCount }: QrScreenProps) {
   const url = joinUrl();
 
   return (
@@ -36,6 +38,16 @@ export function QrScreen({ onClose }: QrScreenProps) {
         </div>
 
         <p className="qr-url">{url.replace(/^https?:\/\//, '')}</p>
+
+        {typeof playerCount === 'number' && (
+          <div className="wait-counter qr-counter">
+            <Users size={22} />
+            <strong>{playerCount}</strong>
+            <span>
+              joueur{playerCount > 1 ? 's' : ''} dans la room
+            </span>
+          </div>
+        )}
 
         {onClose ? (
           <button type="button" className="btn btn-ghost btn-sm qr-close" onClick={onClose}>

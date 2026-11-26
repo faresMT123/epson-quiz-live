@@ -2894,6 +2894,21 @@ code {
   margin-top: 2px;
 }
 
+.qr-counter {
+  padding: 9px 18px;
+  margin-top: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(53, 184, 240, 0.32);
+}
+
+.qr-counter strong {
+  font-size: 1.7rem;
+}
+
+.qr-counter span {
+  font-size: 0.8rem;
+}
+
 .qr-remote {
   display: inline-flex;
   align-items: center;

@@ -30,10 +30,12 @@ export function ReportsCard({ snapshot, requestReport }: ReportsCardProps) {
     setLoading(false);
   }, [requestReport]);
 
-  // Recharge quand la room courante change d'état ou qu'un joueur termine.
+  // Recharge uniquement quand la room change (nouvel identifiant ou nouvel état).
+  // On retire volontairement `snapshot.stats.finished` des dépendances pour éviter
+  // de ré-émettre `admin:report` à chaque fois qu'un joueur termine la room.
   useEffect(() => {
     void load();
-  }, [load, snapshot.roomId, snapshot.roomState, snapshot.stats.finished]);
+  }, [load, snapshot.roomId, snapshot.roomState]);
 
   const download = async (roomId?: string) => {
     const target = roomId ?? 'all';
@@ -73,7 +75,7 @@ export function ReportsCard({ snapshot, requestReport }: ReportsCardProps) {
 
       <p className="helper-text reports-help">
         Un PDF par room : classement complet, scores, temps, podium et répartition des bonnes
-        réponses (toutes justes, au moins une, aucune).
+        réponses (toutes justes, partiellement justes, aucune).
       </p>
 
       {loading && reports.length === 0 ? (

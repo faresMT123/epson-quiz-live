@@ -214,7 +214,7 @@ function drawAnswerBreakdown(doc: jsPDF, y: number, stats: RoomReportStats): num
 
   const rows: { label: string; count: number; color: Rgb }[] = [
     { label: 'Toutes les réponses justes', count: stats.allCorrect, color: COLOR.green },
-    { label: 'Au moins une réponse juste', count: stats.atLeastOneCorrect, color: COLOR.blue },
+    { label: 'Au moins une, sans tout trouver', count: stats.someCorrect, color: COLOR.blue },
     { label: 'Aucune réponse juste', count: stats.noneCorrect, color: COLOR.red },
   ];
 

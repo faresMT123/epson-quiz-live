@@ -62,7 +62,7 @@ export function PresenterApp({ onExit }: { onExit: () => void }) {
   }
 
   if (snapshot.display === 'qr') {
-    return <QrScreen />;
+    return <QrScreen playerCount={snapshot.stats.total} />;
   }
 
   return (

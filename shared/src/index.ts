@@ -177,8 +177,8 @@ export interface RoomReportStats {
   finished: number;
   /** Joueurs ayant toutes les réponses justes (parmi les joueurs terminés). */
   allCorrect: number;
-  /** Joueurs ayant au moins une réponse juste (parmi les joueurs terminés). */
-  atLeastOneCorrect: number;
+  /** Joueurs ayant au moins une réponse juste sans avoir tout trouvé (parmi les joueurs terminés). */
+  someCorrect: number;
   /** Joueurs sans aucune réponse juste (parmi les joueurs terminés). */
   noneCorrect: number;
   averageScore: number | null;

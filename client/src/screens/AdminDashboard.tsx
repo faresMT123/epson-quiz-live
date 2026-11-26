@@ -595,6 +595,7 @@ export function AdminDashboard({ admin, snapshot, onExit }: AdminDashboardProps)
 
       {qrVisible && snapshot.reveal.stage === 'off' && (
         <QrScreen
+          playerCount={stats.total}
           onClose={() => {
             setQrVisible(false);
             if (snapshot.display === 'qr') void action('hide-qr');

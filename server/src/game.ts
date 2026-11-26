@@ -768,7 +768,10 @@ export class Game {
     const allCorrect = finished.filter(
       (player) => (player.score ?? 0) === (player.total ?? questionCount),
     ).length;
-    const atLeastOneCorrect = finished.filter((player) => (player.score ?? 0) > 0).length;
+    const someCorrect = finished.filter((player) => {
+      const score = player.score ?? 0;
+      return score > 0 && score < (player.total ?? questionCount);
+    }).length;
     const noneCorrect = finished.filter((player) => (player.score ?? 0) === 0).length;
     const average = (values: number[]): number | null =>
       values.length > 0 ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
@@ -786,7 +789,7 @@ export class Game {
         participants: this.players.size,
         finished: finished.length,
         allCorrect,
-        atLeastOneCorrect,
+        someCorrect,
         noneCorrect,
         averageScore: average(finished.map((player) => player.score ?? 0)),
         averageDurationMs: average(finished.map((player) => player.durationMs ?? 0)),
