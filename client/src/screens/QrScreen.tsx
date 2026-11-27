@@ -1,6 +1,9 @@
 import { QrCode, Users, X } from 'lucide-react';
 import { EpsonLogo } from '../components/EpsonLogo';
-import { JoinQr, joinUrl } from '../components/JoinQr';
+import { joinUrl } from '../components/JoinQr';
+
+/** Ton QR code officiel (logo EPSON au centre). Place le fichier dans public/icons/. */
+const QR_IMAGE = '/icons/qr-epson.png';
 import './qr-screen.css';
 
 interface QrScreenProps {
@@ -121,7 +124,7 @@ export function QrScreen({ onClose, playerCount }: QrScreenProps) {
               <span className="qrs-corner bl" />
               <span className="qrs-corner br" />
               <div className="qrs-qr">
-                <JoinQr url={url} />
+                <img src={QR_IMAGE} alt={`QR code : ${url}`} draggable={false} />
                 <span className="qrs-scanline" aria-hidden="true" />
                 <span className="qrs-shine" aria-hidden="true" />
               </div>
