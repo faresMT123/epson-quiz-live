@@ -41,7 +41,13 @@ export interface Player {
   startedAt: number | null;
   startedHr: bigint | null;
   endsAt: number | null;
+  /** Réponse choisie, exprimée dans l'ordre des propositions servi à CE joueur. */
   answers: Record<string, number>;
+  /**
+   * Ordre des propositions mélangé pour ce joueur, par question :
+   * `optionOrders[qid][i]` = index d'origine de la proposition affichée en position `i`.
+   */
+  optionOrders: Record<string, number[]>;
   submittedAt: number | null;
   score: number | null;
   /** Nombre de questions au moment du départ (dénominateur du score). */
@@ -148,6 +154,7 @@ export class Game {
       startedHr: null,
       endsAt: null,
       answers: {},
+      optionOrders: {},
       submittedAt: null,
       score: null,
       total: null,
@@ -502,6 +509,18 @@ export class Game {
   private begin(player: Player): void {
     player.pendingStartAt = null;
     player.total = this.questions.length;
+    // Propositions mélangées, une fois pour ce joueur : l'ordre reste stable
+    // pendant tout son quiz (y compris s'il se reconnecte).
+    const served = this.playQuestions.length > 0 ? this.playQuestions : this.questions;
+    player.optionOrders = {};
+    for (const question of served) {
+      const order = shuffle(question.options.map((_, index) => index));
+      // Garantit un ordre différent de celui saisi par l'organisateur.
+      if (question.options.length > 1 && order.every((value, index) => value === index)) {
+        order.push(order.shift() as number);
+      }
+      player.optionOrders[question.id] = order;
+    }
     player.startedAt = Date.now();
     player.startedHr = process.hrtime.bigint();
     player.endsAt = player.startedAt + QUIZ_DURATION_MS;
@@ -519,10 +538,15 @@ export class Game {
     const elapsed = Number(endHr - startedHr) / 1_000_000;
 
     player.durationMs = auto ? QUIZ_DURATION_MS : Math.max(0, Math.round(elapsed));
-    player.score = this.questions.reduce(
-      (total, question) => total + (player.answers[question.id] === question.correctIndex ? 1 : 0),
-      0,
-    );
+    player.score = this.questions.reduce((total, question) => {
+      const chosen = player.answers[question.id];
+      if (chosen === undefined) return total;
+      // La réponse est stockée dans l'ordre mélangé du joueur : on repasse
+      // par l'ordre d'origine pour la comparer à la correction.
+      const order = player.optionOrders[question.id];
+      const original = order ? (order[chosen] ?? chosen) : chosen;
+      return total + (original === question.correctIndex ? 1 : 0);
+    }, 0);
     player.submittedAt = Date.now();
     player.autoClosed = auto;
 
@@ -577,11 +601,14 @@ export class Game {
     const served = this.playQuestions.length > 0 ? this.playQuestions : this.questions;
     const questions: PublicQuestion[] | null =
       phase === 'quiz' || phase === 'result'
-        ? served.map((question) => ({
-            id: question.id,
-            prompt: question.prompt,
-            options: [...question.options],
-          }))
+        ? served.map((question) => {
+            const order = player.optionOrders[question.id];
+            return {
+              id: question.id,
+              prompt: question.prompt,
+              options: order ? order.map((index) => question.options[index]) : [...question.options],
+            };
+          })
         : null;
 
     return {

@@ -20,34 +20,21 @@ export interface Question {
 export const QUESTIONS: readonly Question[] = [
   {
     id: 'q1',
-    prompt: 'Le volume de la gamme Home est réduit de :',
-    options: ['10%', '20%', '40%'],
+    prompt: 'Les imprimantes Epson AM Series sont destinées principalement à quel environnement ?',
+    options: ['Domestique', 'Bureau / entreprise', 'Industriel'],
     correctIndex: 1,
   },
   {
     id: 'q2',
-    prompt: "La durabilité d'impression de la nouvelle gamme Home :",
-    options: ['30 000 pages', '50 000 pages', '100 000 pages'],
+    prompt: "Quel type de technologie utilisent les vidéoprojecteurs Epson ?",
+    options: ['LED', '3LCD', 'DLP'],
     correctIndex: 1,
   },
   {
     id: 'q3',
     prompt:
-      'Quel modèle est équipé de la fonction de numérisation et de copie recto-verso automatique ?',
-    options: ['L5390', 'L6370', 'L4360'],
+      'Sur le segment A3, quelle est la plage de vitesses d’impression proposée par Epson pour ses modèles couleur Business Professionnelles?',
+    options: ['De 10 à 50 pages par minute', 'De 25 à 100 pages par minute', 'De 30 à 80 pages par minute'],
     correctIndex: 1,
-  },
-  {
-    id: 'q4',
-    prompt:
-      "Quel est le rendement en pages de la bouteille d'encre noire incluse avec les nouveaux modèles ?",
-    options: ['7 500 pages', '5 500 pages', '15 100 pages'],
-    correctIndex: 2,
-  },
-  {
-    id: 'q5',
-    prompt: "Quel est le cycle d'utilisation de la L6370 ?",
-    options: ['30 000 pages', '50 000 pages', '100 000 pages'],
-    correctIndex: 2,
   },
 ];

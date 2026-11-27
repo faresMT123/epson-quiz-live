@@ -131,17 +131,18 @@
   margin: 0;
   display: flex;
   justify-content: center;
-  font-size: clamp(1.6rem, min(5vh, 4vw), 3.2rem);
+  font-size: clamp(1.2rem, min(3vh, 2.4vw), 1.9rem);
   font-weight: 900;
-  font-style: italic;
-  letter-spacing: 0.06em;
+  font-style: normal;
+  letter-spacing: 0.22em;
   line-height: 1;
   text-transform: uppercase;
-  filter: drop-shadow(0 8px 26px rgba(0, 51, 153, 0.7));
+  animation: qrs-titleglow 2.6s ease-in-out infinite;
 }
 .qrs-letter {
   display: inline-block;
-  background: linear-gradient(180deg, #ffffff 25%, var(--epson-ice) 100%);
+  background: linear-gradient(100deg, #ffffff 0%, var(--epson-ice) 25%, var(--epson-sky) 50%, var(--epson-ice) 75%, #ffffff 100%);
+  background-size: 300% 100%;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -150,9 +151,23 @@
   transform-origin: 50% 100%;
   animation:
     qrs-letter 0.7s calc(120ms + var(--i) * 70ms) var(--ease) forwards,
-    qrs-wobble 4.2s calc(1.4s + var(--i) * 120ms) ease-in-out infinite;
+    qrs-wobble 1.8s calc(1s + var(--i) * 110ms) ease-in-out infinite,
+    qrs-colorflow 3s calc(var(--i) * -0.25s) linear infinite;
 }
 .qrs-letter.is-space { width: 0.35em; }
+
+/* Titre statique : aucune animation */
+.qrs-title { animation: none; filter: none; }
+.qrs-title::after { display: none; }
+.qrs-letter {
+  animation: none;
+  opacity: 1;
+  transform: none;
+  background: none;
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+  color: #ffffff;
+}
 .qrs-title::after {
   content: '';
   position: absolute;
@@ -465,8 +480,16 @@
 @keyframes qrs-rise { to { opacity: 1; transform: translateY(0); } }
 @keyframes qrs-letter { to { opacity: 1; transform: none; } }
 @keyframes qrs-wobble {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-10px) scale(1.12); }
+}
+@keyframes qrs-colorflow {
+  from { background-position: 0% 50%; }
+  to { background-position: -300% 50%; }
+}
+@keyframes qrs-titleglow {
+  0%, 100% { filter: drop-shadow(0 4px 14px rgba(77, 141, 255, 0.35)); }
+  50% { filter: drop-shadow(0 6px 30px rgba(77, 141, 255, 0.95)); }
 }
 @keyframes qrs-shimmer { 0% { transform: translateX(-130%); } 45%, 100% { transform: translateX(130%); } }
 @keyframes qrs-chev {
